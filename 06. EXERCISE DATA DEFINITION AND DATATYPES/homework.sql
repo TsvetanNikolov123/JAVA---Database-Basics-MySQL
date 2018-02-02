@@ -78,8 +78,19 @@ INSERT INTO `users`(`username`, `password`, `last_login_time`, `is_deleted`)
 			('George','Bojkata123', '2016-12-25', FALSE),
 			('Teodor','Bojkata123', '2012-09-01', FALSE);
             
--- --9---
-            
+-- ---9---
+ALTER TABLE `users`
+DROP PRIMARY KEY,
+ADD CONSTRAINT `pk_users` PRIMARY KEY(`id`,`username`);
+
+-- ---10---   
+ALTER TABLE `users`
+MODIFY COLUMN `last_login_time`
+TIMESTAMP
+NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- ---11---
+
 
 
     
