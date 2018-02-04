@@ -52,4 +52,47 @@ WHERE
     `salary` BETWEEN 20000 AND 30000;
 
 -- ---9---
+SELECT 
+    CONCAT_WS(' ', `first_name`, `middle_name`, `last_name`) AS 'full_name'
+FROM
+    `employees`
+WHERE
+    `salary` = 25000 OR `salary` = 14000 OR `salary` = 12500 OR `salary` = 23600;
+
+-- ---10---
+SELECT 
+    `first_name`, `last_name`
+FROM
+    `employees`
+WHERE
+    `manager_id` IS NULL;
+    
+-- ---11---
+SELECT 
+    `first_name`, `last_name`, `salary`
+FROM
+    `employees`
+WHERE
+    `salary` > 50000
+ORDER BY `salary` DESC;
+
+-- ---12---
+SELECT 
+    `first_name`, `last_name`
+FROM
+    `employees`
+ORDER BY `salary` DESC LIMIT 5;
+
+-- ---13---
+SELECT 
+    `first_name`, `last_name`
+FROM
+    `employees`
+WHERE
+    NOT `department_id` = 4;
+    
+-- ---14---
+
+	
+
 
