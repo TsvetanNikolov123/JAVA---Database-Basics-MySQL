@@ -79,3 +79,61 @@ ORDER BY `w`.`magic_wand_creator` ASC , `w`.`deposit_group` ASC;
 
 -- --9---
 
+ SELECT 
+    CASE
+        WHEN `age` <= 10 THEN '[0-10]'
+        WHEN `age` <= 20 THEN '[11-20]'
+        WHEN `age` <= 30 THEN '[21-30]'
+        WHEN `age` <= 40 THEN '[31-40]'
+        WHEN `age` <= 50 THEN '[41-50]'
+        WHEN `age` <= 60 THEN '[51-60]'
+        ELSE '[61+]'
+    END AS `age_group`,
+    COUNT(*) AS `wizzard_count`
+FROM
+    `wizzard_deposits`
+GROUP BY `age_group`;
+
+-- ---10---
+
+SELECT 
+    SUBSTRING(`first_name`, 1, 1) AS `first_letter`
+FROM
+    `wizzard_deposits`
+WHERE
+    `deposit_group` = 'Troll Chest'
+GROUP BY `first_letter`
+ORDER BY `first_letter`;
+
+-- ---11---
+
+SELECT 
+    `w`.`deposit_group`,
+    `w`.`is_deposit_expired`,
+    AVG(`w`.`deposit_interest`) AS `average_interest`
+FROM
+    `wizzard_deposits` AS `w`
+WHERE
+    `w`.`deposit_start_date` > '1985-01-01'
+GROUP BY `w`.`deposit_group` , `w`.`is_deposit_expired`
+ORDER BY `w`.`deposit_group` DESC , `w`.`is_deposit_expired` ASC;
+
+-- ---12---
+
+SELECT 
+    SUM(`diff`.`next`) AS `sum_difference`
+FROM
+    (SELECT 
+        `deposit_amount` - (SELECT 
+                    `deposit_amount`
+                FROM
+                    `wizzard_deposits`
+                WHERE
+                    `id` = `wd`.`id` + 1) AS next
+    FROM
+        `wizzard_deposits` AS `wd`) AS `diff`;
+
+-- ---13---
+
+
+        
