@@ -171,4 +171,74 @@ FROM
 GROUP BY `emp`.`department_id`
 ORDER BY `emp`.`department_id` ASC;
 
+-- ---15---
 
+SELECT 
+    `e`.`department_id`, MAX(`e`.`salary`) AS `max_salary`
+FROM
+    `employees` AS `e`
+GROUP BY `e`.`department_id`
+HAVING `max_salary` < 30000
+    OR `max_salary` > 70000
+ORDER BY `e`.`department_id`;
+
+-- ---16---
+
+SELECT 
+    COUNT(`e`.`salary`)
+FROM
+    `employees` AS `e`
+WHERE
+    `manager_id` IS NULL;
+
+-- ---17---
+
+SELECT 
+    emp.department_id, MAX(emp.salary) AS third_highest_salary
+FROM
+    employees AS emp
+        JOIN
+    (SELECT 
+        e.department_id AS department_id,
+            MAX(e.salary) AS max_salary
+    FROM
+        employees AS e
+    JOIN (SELECT 
+        e.department_id AS department_id,
+            MAX(e.salary) AS max_salary
+    FROM
+        employees AS e
+    GROUP BY e.department_id) AS first_max_salary ON e.department_id = first_max_salary.department_id
+    WHERE
+        e.salary < first_max_salary.max_salary
+    GROUP BY e.department_id) AS second_max_salary ON emp.department_id = second_max_salary.department_id
+WHERE
+    emp.salary < second_max_salary.max_salary
+GROUP BY emp.department_id
+ORDER BY emp.department_id;
+
+-- ---18---
+
+SELECT 
+    e.first_name, e.last_name, e.department_id
+FROM
+    employees AS e,
+    (SELECT 
+        e.department_id, AVG(e.salary) AS avg_salary
+    FROM
+        employees AS e
+    GROUP BY e.department_id) AS avg_salary_by_dep
+WHERE
+    e.department_id = avg_salary_by_dep.department_id
+        AND e.salary > avg_salary_by_dep.avg_salary
+ORDER BY e.department_id ASC
+LIMIT 10;
+
+-- ---19---
+
+SELECT 
+    `e`.`department_id`, SUM(`e`.`salary`)
+FROM
+    `employees` AS `e`
+GROUP BY `e`.`department_id`
+ORDER BY `e`.`department_id`;
