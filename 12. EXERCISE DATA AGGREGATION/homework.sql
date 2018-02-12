@@ -135,5 +135,40 @@ FROM
 
 -- ---13---
 
+SELECT 
+    `e`.`department_id`, MIN(`e`.`salary`) AS `minimum_salary`
+FROM
+    `employees` AS `e`
+WHERE
+    (`e`.`department_id` = 2
+        OR `e`.`department_id` = 5
+        OR `e`.`department_id` = 7)
+        AND `e`.`hire_date` > 2000 - 01 - 01
+GROUP BY `e`.`department_id`
+ORDER BY `e`.`department_id` ASC;
 
-        
+-- ---14---
+
+CREATE TEMPORARY TABLE IF NOT EXISTS `emp` AS (SELECT * FROM
+    `employees` AS `e`
+WHERE
+    `e`.`salary` > 30000);
+    
+DELETE FROM `emp` 
+WHERE
+    `emp`.`manager_id` = 42;
+    
+UPDATE `emp` 
+SET 
+    `emp`.`salary` = `emp`.`salary` + 5000
+WHERE
+    `emp`.`department_id` = 1; 
+    
+SELECT 
+    `emp`.`department_id`, AVG(`emp`.`salary`) AS `avg_salary`
+FROM
+    `emp`
+GROUP BY `emp`.`department_id`
+ORDER BY `emp`.`department_id` ASC;
+
+
