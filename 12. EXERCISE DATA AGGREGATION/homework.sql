@@ -133,6 +133,22 @@ FROM
     FROM
         `wizzard_deposits` AS `wd`) AS `diff`;
 
+-- ----------------------------
+
+SELECT 
+    SUM(asd.difference)
+FROM
+    (SELECT 
+        wd1.first_name AS host_wizard,
+            wd1.deposit_amount AS host_wizard_deposit,
+            wd2.first_name AS guest_wizard,
+            wd2.deposit_amount AS guest_wizard_deposit,
+            (wd1.deposit_amount - wd2.deposit_amount) AS difference
+    FROM
+        wizzard_deposits AS wd1, wizzard_deposits AS wd2
+    WHERE
+        wd2.id - wd1.id = 1) AS asd;
+        
 -- ---13---
 
 SELECT 
