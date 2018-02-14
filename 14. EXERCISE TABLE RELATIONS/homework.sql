@@ -1,5 +1,6 @@
 -- ---1---
 
+
 CREATE TABLE `persons` (
     `person_id` INT,
     `first_name` VARCHAR(255),
@@ -33,3 +34,32 @@ INSERT INTO `persons`
 VALUES 	(1, 'Roberto', 43300.00,102),
 		(2, 'Tom', 56100.00,103),
 		(3, 'Yana', 60200.00,101);
+
+        
+-- ---2---
+
+
+-- ---3---
+
+
+-- ---4---
+
+
+CREATE TABLE `teachers` (
+    `teacher_id` INT PRIMARY KEY,
+    `name` VARCHAR(255),
+    `manager_id` INT
+);
+
+INSERT INTO `teachers`
+VALUES 	(101, 'John', NULL),
+		(102, 'Maya', 106),
+        (103, 'Silvia', 106),
+        (104, 'Ted', 105),
+        (105, 'Mark', 101),
+        (106, 'Greta', 101);
+
+ALTER TABLE `teachers` 
+ADD CONSTRAINT `fk_teacher_teachers`
+FOREIGN KEY (`manager_id`) 
+REFERENCES `teachers`(`teacher_id`); 
