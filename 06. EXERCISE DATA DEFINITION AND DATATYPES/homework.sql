@@ -1,7 +1,11 @@
--- ---1---
+-- ---------------------------------
+-- 1.	Create Database
+-- ---------------------------------
 CREATE DATABASE `minions`;
 
--- ---2---
+-- ---------------------------------
+-- 2.	Create Tables
+-- ---------------------------------
 USE `minions`;
 CREATE TABLE `minions`(
 	`id` INT PRIMARY KEY,
@@ -14,13 +18,17 @@ CREATE TABLE `towns`(
 	`name` VARCHAR(50)
 );
 
--- ---3---
+-- ---------------------------------
+-- 3.	Alter Minions Table
+-- ---------------------------------
 ALTER TABLE `minions` ADD COLUMN `town_id` INT;
 ALTER TABLE `minions`
 ADD CONSTRAINT `fk_minions_towns` FOREIGN KEY(`town_id`)
 REFERENCES `towns`(id);
 
--- ---4---
+-- ------------------------------------
+-- 4.	Insert Records in Both Tables
+-- ------------------------------------
 INSERT INTO `towns`(`id`, `name`)
 	VALUES 	(1, 'Sofia'),
 			(2, 'Plovdiv'),
@@ -31,14 +39,20 @@ INSERT INTO `minions`(`id`, `name`, `age`, `town_id`)
 			(2,'Bob', 15, 3),
 			(3,'Steward', NULL, 2);
 
--- ---5---
+-- ------------------------------------
+-- 5.	Truncate Table Minions
+-- ------------------------------------
 TRUNCATE TABLE `minions`;
 
--- ---6---
+-- ------------------------------------
+-- 6.	Drop All Tables
+-- ------------------------------------
 DROP TABLE `minions`;
 DROP TABLE `towns`;
 
--- ---7---
+-- ------------------------------------
+-- 7.	Create Table People
+-- ------------------------------------
 CREATE TABLE `people`(
 	`id` INT AUTO_INCREMENT,
     `name` VARCHAR(200) NOT NULL,
@@ -58,7 +72,9 @@ INSERT INTO `people`(`id`, `name`, `gender`, `birthdate`, `biography`)
 			(4, 'Tsvetan', 'm', '1999-01-13', 'A lot of stories'),
 			(5, 'Victor', 'm', '1956-01-22', 'A lot of alcohol in his biography');
 
--- ---8---
+-- ------------------------------------
+-- 8.	Create Table Users
+-- ------------------------------------
 CREATE TABLE `users`(
 	`id` BIGINT UNIQUE AUTO_INCREMENT,
     `username` VARCHAR(30) UNIQUE NOT NULL,
@@ -78,24 +94,32 @@ INSERT INTO `users`(`username`, `password`, `last_login_time`, `is_deleted`)
 			('George','Bojkata123', '2016-12-25', FALSE),
 			('Teodor','Bojkata123', '2012-09-01', FALSE);
             
--- ---9---
+-- ------------------------------------
+-- 9.	Change Primary Key
+-- ------------------------------------
 ALTER TABLE `users`
 DROP PRIMARY KEY,
 ADD CONSTRAINT `pk_users` PRIMARY KEY(`id`,`username`);
 
--- ---10---   
+-- ------------------------------------
+-- 10.	Set Default Value of a Field
+-- ------------------------------------   
 ALTER TABLE `users`
 MODIFY COLUMN `last_login_time`
 TIMESTAMP
 NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
--- ---11---
+-- ------------------------------------
+-- 11.	 Set Unique Field
+-- ------------------------------------
 ALTER TABLE `users` MODIFY `id` BIGINT NOT NULL;
 ALTER TABLE `users` DROP PRIMARY KEY;
 ALTER TABLE `users` ADD CONSTRAINT `pk_users` PRIMARY KEY(`id`);
 ALTER TABLE `users` ADD CONSTRAINT `uq_username` UNIQUE (`username`);
 
--- ---12---
+-- ------------------------------------
+-- 12.	Movies Database
+-- ------------------------------------
 CREATE TABLE `directors`(
 	`id` INT AUTO_INCREMENT PRIMARY KEY,
     `director_name` VARCHAR(30) NOT NULL,
@@ -154,7 +178,9 @@ INSERT INTO `movies`(`id`, `title`,`copyright_year`,`length`,`genre_id`, `catego
 		(8,'fourthTitle', '2013-05-22',143,5,8),
 		(9,'fifthTitle', '1999-07-07',163,5,5);
 
--- ---13---
+-- ------------------------------------
+-- 13.	Car Rental Database
+-- ------------------------------------
 CREATE TABLE `categories`(
 	`id` INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     `category` VARCHAR(50) NOT NULL,
@@ -239,7 +265,9 @@ INSERT INTO `rental_orders`(`employee_id`, `customer_id`,`car_id`)
 		(2,5,2),
 		(7,10,11);
 
--- ---14----
+-- ------------------------------------
+-- 14.	Hotel Database
+-- ------------------------------------
 CREATE TABLE `employees`(
 	`id` INT,
 	`first_name` VARCHAR(50) NOT NULL,
@@ -356,7 +384,9 @@ INSERT INTO `occupancies`(`id`,`notes`)
         (2,'sasas'),
         (3,'sasasa');
 
--- ---15---
+-- ------------------------------------
+-- 15.	Create SoftUni Database
+-- ------------------------------------
 CREATE DATABASE `soft_uni`;
 
 USE `soft_uni`;
@@ -395,9 +425,13 @@ CREATE TABLE `employees`(
 	REFERENCES  `departments`(`id`)  
 );
 
--- ---16---
+-- ------------------------------------
+-- 16.	Backup Database
+-- ------------------------------------
 
--- ---17---
+-- ------------------------------------
+-- 17.	Basic Insert
+-- ------------------------------------
 INSERT INTO `towns`(`name`)
 	VALUES
 		('Sofia'),
@@ -421,28 +455,40 @@ INSERT INTO `employees`(`first_name`,`middle_name`,`last_name`,`job_title`,`depa
 		('Georgi','Terziev','Ivanov','CEO',2,'2007-12-09','3000.00'),
 		('Peter','Pan','Pan','Intern',3,'2016-08-28','599.88');
         
--- ---18---
+-- ------------------------------------
+-- 18.	Basic Select All Fields
+-- ------------------------------------
 SELECT * FROM `towns`;
 SELECT * FROM `departments`;
 SELECT * FROM `employees`;
 
--- ---19---
+-- ---------------------------------------------
+-- 19.	Basic Select All Fields and Order Them
+-- ---------------------------------------------
 SELECT * FROM `towns` AS `t` ORDER BY `t`.`name`;
 SELECT * FROM `departments` AS `d` ORDER BY `d`.`name`;
 SELECT * FROM `employees` ORDER BY `salary` DESC; 
 
--- ---20---
+-- ------------------------------------
+-- 20.	Basic Select Some Fields
+-- ------------------------------------
 SELECT `name` FROM `towns` ORDER BY `name`;
 SELECT `name` FROM `departments` ORDER BY `name`;
 SELECT `first_name`, `last_name`, `job_title`, `salary` FROM `employees` ORDER BY `salary` DESC;
 
--- ---21---
+-- ------------------------------------
+-- 21.	Increase Employees Salary
+-- ------------------------------------
 UPDATE `employees`
 SET `salary`=`salary` * 1.1;
 SELECT `salary` FROM `employees`;
 
--- ---22---
+-- ------------------------------------
+-- 22.	Decrease Tax Rate
+-- ------------------------------------
 SELECT `tax_rate` * 0.97 FROM `payments`;
 
--- ---23---
+-- ------------------------------------
+-- 23.	Delete All Records
+-- ------------------------------------
 DELETE FROM `occupancies`;
