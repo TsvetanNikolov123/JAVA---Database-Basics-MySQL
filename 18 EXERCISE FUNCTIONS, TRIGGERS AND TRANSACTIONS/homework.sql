@@ -283,7 +283,7 @@ RETURNS DOUBLE(19, 2)
 BEGIN
     RETURN initial_sum * POW((1 + interest_rate), years);
 END $$
-DELIMITER $$
+DELIMITER ;
 				
 -- -------------------------------------------------------------------
 -- 12.	Calculating Interest
@@ -300,9 +300,219 @@ DELIMITER $$
     desired precision!
 */
 
+DELIMITER $$
+CREATE PROCEDURE usp_calculate_future_value_for_account (account_id INT, interest_rate DECIMAL(19,4))
+BEGIN
+	SELECT 
+		a.id AS 'account_id',
+		ah.first_name,
+		ah.last_name,
+		a.balance AS 'current_balance',
+		cast(a.balance * POW((1 + interest_rate), 5) as DECIMAL(19,4)) AS 'balance_in_5_years' 
+        -- ufn_calculate_future_value(a.balance, interest_rate, 5) AS 'balance_in_5_years'
+	FROM
+		account_holders AS ah
+			JOIN
+		accounts AS a ON ah.id = a.account_holder_id
+	WHERE
+		a.id = account_id;
+END $$
+DELIMITER ;
 
+-- -------------------------------------------------------------------
+-- 13. Deposit Money
+-- -------------------------------------------------------------------
+/*
+	Add stored procedure usp_deposit_money(account_id, money_amount) 
+    that operate in transactions. 
+	Make sure to guarantee valid positive money_amount with precision 
+	up to fourth sign after decimal point. The procedure should produce 
+	exact results working with the specified precision.
+*/
 
+DELIMITER $$
+CREATE PROCEDURE usp_deposit_money(account_id INT, money_amount DECIMAL(19,4))
+BEGIN
+	IF money_amount > 0 THEN
+		START TRANSACTION;
+        
+        UPDATE accounts AS a
+        SET
+			a.balance = a.balance + money_amount
+		WHERE
+			a.id = account_id;
+		
+        IF( SELECT 
+				a.balance
+			FROM
+				accounts AS a
+			WHERE 
+				a.id = account_id) < 0
+			THEN ROLLBACK;
+		ELSE
+			COMMIT;
+		END IF;
+	END IF;
+END $$
+DELIMITER ;
 
+-- -------------------------------------------------------------------
+-- 14. Withdraw Money
+-- -------------------------------------------------------------------
+/*
+	Add stored procedures usp_withdraw_money(account_id, money_amount)
+    that operate in transactions. 
+	Make sure to guarantee withdraw is done only when balance is enough and 
+	money_amount is valid positive number. Work with precision up to fourth
+	sign after decimal point. The procedure should produce exact results
+	working with the specified precision
+*/
 
+DELIMITER $$
+CREATE PROCEDURE usp_withdraw_money(account_id INT, money_amount DECIMAL(19,4))
+BEGIN
+	IF money_amount > 0 THEN
+        START TRANSACTION;
+        
+        UPDATE 
+			`accounts` AS a 
+        SET 
+            a.balance = a.balance - money_amount
+        WHERE
+            a.id = account_id;
+        
+        IF (SELECT 
+				a.balance 
+            FROM 
+				`accounts` AS a 
+            WHERE 
+				a.id = account_id) < 0
+            THEN ROLLBACK;
+        ELSE
+            COMMIT;
+        END IF;
+    END IF;
+END $$
+DELIMITER ;
+
+-- -------------------------------------------------------------------
+-- 15.	Money Transfer
+-- -------------------------------------------------------------------
+/*
+	Write stored procedure usp_transfer_money(from_account_id, 
+    to_account_id, amount) that transfers money from one account to 
+    another. Consider cases when one of the account_ids is not valid, 
+    the amount of money is negative number, outgoing balance is enough 
+    or transferring from/to one and the same account. Make sure that the 
+    whole procedure passes without errors and if error occurs make no 
+    change in the database. 
+	Make sure to guarantee exact results working with precision up to 
+    fourth sign after decimal point.
+*/
+
+DELIMITER $$
+CREATE PROCEDURE usp_transfer_money(
+    from_account_id INT, to_account_id INT, money_amount DECIMAL(19, 4))
+BEGIN
+    IF money_amount > 0 
+        AND from_account_id <> to_account_id 
+        AND (SELECT a.id 
+            FROM `accounts` AS a 
+            WHERE a.id = to_account_id) IS NOT NULL
+        AND (SELECT a.id 
+            FROM `accounts` AS a 
+            WHERE a.id = from_account_id) IS NOT NULL
+        AND (SELECT a.balance 
+            FROM `accounts` AS a 
+            WHERE a.id = from_account_id) >= money_amount
+    THEN
+        START TRANSACTION;
+        
+        UPDATE `accounts` AS a 
+        SET 
+            a.balance = a.balance + money_amount
+        WHERE
+            a.id = to_account_id;
+            
+        UPDATE `accounts` AS a 
+        SET 
+            a.balance = a.balance - money_amount
+        WHERE
+            a.id = from_account_id;
+        
+        IF (SELECT a.balance 
+            FROM `accounts` AS a 
+            WHERE a.id = from_account_id) < 0
+            THEN ROLLBACK;
+        ELSE
+            COMMIT;
+        END IF;
+    END IF;
+END $$
+DELIMITER ;
+
+-- -------------------------------------------------------------------
+-- 16.	Log Accounts Trigger
+-- -------------------------------------------------------------------
+/*
+	Create another table – logs(log_id, account_id, old_sum, new_sum).
+    Add a trigger to the accounts table that enters a new entry into 
+    the logs table every time the sum on an account changes.
+*/
+
+CREATE TABLE `logs` (
+    log_id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    account_id INT(11) NOT NULL,
+    old_sum DECIMAL(19, 4) NOT NULL,
+    new_sum DECIMAL(19, 4) NOT NULL
+);
+
+DELIMITER $$
+CREATE TRIGGER `tr_balance_updated`
+AFTER UPDATE ON `accounts`
+FOR EACH ROW
+BEGIN
+    IF OLD.balance <> NEW.balance THEN
+        INSERT INTO `logs` 
+            (`account_id`, `old_sum`, `new_sum`)
+        VALUES (OLD.id, OLD.balance, NEW.balance);
+    END IF;
+END $$
+DELIMITER ;
+
+-- -------------------------------------------------------------------
+-- 17.	Emails Trigger
+-- -------------------------------------------------------------------
+/*
+	Create another table – notification_emails(id, recipient, subject, body).
+    Add a trigger to logs table to create new email whenever new record is 
+    inserted in logs table. The following data is required to be filled for
+    each email:
+		•	recipient – account_id
+		•	subject – “Balance change for account: {account_id}”
+		•	body - “On {date (current date)} your balance was changed
+			from {old} to {new}.”
+*/
+
+CREATE TABLE notification_emails (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    recipient INT(11) NOT NULL,
+    subject VARCHAR(50) NOT NULL,
+    body VARCHAR(255) NOT NULL
+);
+
+DELIMITER $$
+CREATE TRIGGER `tr_notification_emails`
+AFTER INSERT ON `logs`
+FOR EACH ROW
+BEGIN
+    INSERT INTO `notification_emails` 
+        (`recipient`, `subject`, `body`)
+    VALUES (
+        NEW.account_id, 
+        CONCAT('Balance change for account: ', NEW.account_id), 
+        CONCAT('On ', DATE_FORMAT(NOW(), '%b %d %Y at %r'), ' your balance was changed from ', ROUND(NEW.old_sum, 2), ' to ', ROUND(NEW.new_sum, 2), '.'));
+END $$
+DELIMITER ;
 
 
