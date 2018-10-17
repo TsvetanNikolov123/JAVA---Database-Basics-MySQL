@@ -84,11 +84,38 @@ WHERE f.id BETWEEN 46 AND 50;
 ## 03. Update 
 ###########################################################################
 
+INSERT INTO repositories_contributors(contributor_id, repository_id)
+SELECT *
+FROM (
+	SELECT contributor_id
+    FROM repositories_contributors
+    WHERE contributor_id = repository_id) AS t1
+CROSS JOIN (
+	SELECT MIN(r.id)
+    FROM repositories AS r
+    LEFT JOIN repositories_contributors AS rc
+    ON r.id = rc.repository_id
+    WHERE rc.repository_id IS NULL) AS t2;
+
 
 ###########################################################################
 ## 04. Delete  
 ###########################################################################
 
+DELETE FROM repositories
+WHERE id NOT IN (
+	SELECT repository_id
+    FROM issues
+);
+
+###########################################################################
+###########################################################################
+
+DELETE FROM repositories USING repositories
+        LEFT JOIN
+    issues ON issues.repository_id = repositories.id 
+WHERE
+    issues.id IS NULL;
 
 ###########################################################################
 ## 05. Users  
@@ -168,3 +195,148 @@ LIMIT 5;
 ## 11. MostContributedRepository
 ###########################################################################
 
+SELECT 
+    r.id,
+    r.name,
+    (	SELECT 
+            COUNT(*)
+        FROM
+            commits
+        WHERE
+            commits.repository_id = r.id) AS commits_count,
+    COUNT(u.id) AS count_of_contributors
+FROM
+    repositories AS r
+        JOIN
+    repositories_contributors AS rc ON r.id = rc.repository_id
+        JOIN
+    users AS u ON u.id = rc.contributor_id
+GROUP BY r.id
+ORDER BY count_of_contributors DESC , r.id ASC
+LIMIT 1;
+
+###########################################################################
+## 12. FixingMyOwnProblems 
+###########################################################################
+
+SELECT 
+    u.id, u.username, COUNT(c.id) AS `commits`
+FROM
+    users AS u
+        LEFT JOIN
+    issues AS i ON u.id = i.assignee_id
+        LEFT JOIN
+    commits AS c ON c.issue_id = i.id
+        AND c.contributor_id = i.assignee_id
+GROUP BY i.assignee_id
+ORDER BY `commits` DESC , u.id;
+
+###########################################################################
+## 13. RecursiveCommits 
+###########################################################################
+
+SELECT 
+    LEFT(f1.name, LOCATE('.', f1.name) - 1) AS `file`,
+    COUNT(c.id) AS `recursive_count`
+FROM
+    files AS f1
+        JOIN
+    files AS f2 ON f1.id = f2.parent_id
+        AND f1.parent_id = f2.id
+        AND f1.id != f2.id
+        LEFT JOIN
+    commits AS c ON c.message LIKE CONCAT('%', f1.name, '%')
+GROUP BY f1.id
+ORDER BY f1.name;
+
+##########################################################################
+##########################################################################
+
+SELECT 
+    LEFT(f.name, LOCATE('.', f.name)-1) AS `file`,
+    (SELECT count(*) FROM commits AS c
+		WHERE locate(f.name, c.message) > 0 ) AS `recursive_count` 
+    FROM files AS f
+JOIN files AS pf
+ON f.id = pf.parent_id AND f.parent_id = pf.id AND f.id != pf.id
+JOIN commits AS c
+ON f.commit_id = c.id
+ORDER BY  f.name;
+
+###########################################################################
+## 14. RepositoriesAndCommits
+###########################################################################
+
+SELECT 
+    r.id, r.name, COUNT(DISTINCT c.contributor_id) AS users
+FROM
+    repositories AS r
+        LEFT JOIN
+    commits AS c ON r.id = c.repository_id
+GROUP BY r.id
+ORDER BY users DESC , r.id;
+
+###########################################################################
+## 15. Commit
+###########################################################################
+ DROP PROCEDURE IF EXISTS udp_commit;
+
+DELIMITER $$
+CREATE PROCEDURE udp_commit(username VARCHAR(30), password VARCHAR(30), message VARCHAR(255), issue_id int(11))
+BEGIN
+	DECLARE user_id INT(11);
+    DECLARE repo_id INT(11);
+
+	SET user_id := (SELECT u.id FROM users AS u WHERE u.username = username);
+    SET repo_id := (SELECT i.repository_id FROM issues AS i WHERE  i.id = 2);
+    
+    IF 1 != (SELECT COUNT(*) FROM users WHERE users.id = user_id) THEN
+     SIGNAL SQLSTATE '45000'
+	 SET MESSAGE_TEXT = 'No such user!';
+    END IF;
+    
+     IF 1 != (SELECT COUNT(*) FROM users WHERE users.id = user_id AND users.password = password) THEN
+     SIGNAL SQLSTATE '45000'
+	 SET MESSAGE_TEXT = 'Password is incorrect!';
+    END IF;
+    
+	IF 1 != (SELECT COUNT(*) FROM issues WHERE issues.id = issue_id) THEN
+	SIGNAL SQLSTATE '45000'
+	SET MESSAGE_TEXT = 'The issue does not exist!';
+    END IF;
+    
+    INSERT INTO commits(message, issue_id, repository_id, contributor_id)
+    VALUES(message, issue_id, repo_id, user_id);
+    
+    UPDATE issues
+    SET issue_status = 'closed'
+    WHERE id = issue_id;
+
+END $$
+
+DELIMITER ;
+
+CALL udp_commit(
+'WhoDenoteBel',
+ 'ajmISQi*',
+ 'Fixed issue: Invalid welcoming message in Read.html',
+ 2 
+ );
+
+###########################################################################
+## 16. Filter Extensions
+###########################################################################
+
+DROP PROCEDURE IF EXISTS udp_findbyextension;
+
+DELIMITER $$
+CREATE PROCEDURE udp_findbyextension(extension VARCHAR(50))
+BEGIN
+	SELECT f.id, f.name AS `caption`, concat(f.size, 'KB')  FROM files AS f
+	WHERE f.name LIKE concat('%.', extension)
+	ORDER BY f.id;
+END$$
+
+DELIMITER ;
+
+CALL udp_findbyextension('html');
