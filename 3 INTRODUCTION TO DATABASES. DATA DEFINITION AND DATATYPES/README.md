@@ -147,7 +147,7 @@ Write a query that will create the “**gamebar**” database.
 ### Solution: <a title="1. Create new database" href="https://github.com/TsvetanNikolov123/JAVA---Database-Basics-MySQL/blob/a3a7202f7659f5e3f3e6557be908497539d90a33/3%20INTRODUCTION%20TO%20DATABASES.%20DATA%20DEFINITION%20AND%20DATATYPES/sql%20queries.sql#L2">1. Create new database</a>
 
     -- ------------------------------------------
-    -- 1. Create new database - SOLUTION				
+    -- 1. Create new database				
     -- ------------------------------------------
     
     CREATE DATABASE gamebar;
@@ -192,7 +192,7 @@ Table “**products**”:
 ### Solution: <a title="2. Create Tables" href="https://github.com/TsvetanNikolov123/JAVA---Database-Basics-MySQL/blob/a3a7202f7659f5e3f3e6557be908497539d90a33/3%20INTRODUCTION%20TO%20DATABASES.%20DATA%20DEFINITION%20AND%20DATATYPES/sql%20queries.sql#L10">2. Create Tables</a>
 
     -- ------------------------------------------
-    -- 2. Create Tables - SOLUTION		
+    -- 2. Create Tables		
     -- ------------------------------------------
     
     CREATE TABLE employees (
@@ -258,9 +258,14 @@ Create the connection via foreign key between the “**products**” and
 <br/>
 
 ### Solution: <a title="5. Adding Constraints" href="https://github.com/TsvetanNikolov123/JAVA---Database-Basics-MySQL/blob/a3a7202f7659f5e3f3e6557be908497539d90a33/3%20INTRODUCTION%20TO%20DATABASES.%20DATA%20DEFINITION%20AND%20DATATYPES/sql%20queries.sql#L48">5. Adding Constraints</a>
+    -- ------------------------------------------
+    -- 5. Adding Constraints 				
+    -- ------------------------------------------
+    
     ALTER TABLE products
     	ADD CONSTRAINT FOREIGN KEY (category_id) 
         REFERENCES categories(id);
+
 ---
 ## 6. Modifying Columns
 
@@ -270,8 +275,13 @@ Change the property “**VARCHAR(50)”** to “**VARCHAR(100)**” to the
 <br/>
 
 ### Solution: <a title="6. Modifying Columns" href="https://github.com/TsvetanNikolov123/JAVA---Database-Basics-MySQL/blob/a3a7202f7659f5e3f3e6557be908497539d90a33/3%20INTRODUCTION%20TO%20DATABASES.%20DATA%20DEFINITION%20AND%20DATATYPES/sql%20queries.sql#L56">6. Modifying Columns</a>
+    -- ------------------------------------------
+    -- 6. Modifying Columns				
+    -- ------------------------------------------
+        
     ALTER TABLE employees
     	MODIFY COLUMN middle_name VARCHAR(100);
+
 ---
 ## 7. Drop Database
 
@@ -280,5 +290,9 @@ Drop the “**gamebar**” database.
 <br/>
 
 ### Solution: <a title="7. Drop Database" href="https://github.com/TsvetanNikolov123/JAVA---Database-Basics-MySQL/blob/a3a7202f7659f5e3f3e6557be908497539d90a33/3%20INTRODUCTION%20TO%20DATABASES.%20DATA%20DEFINITION%20AND%20DATATYPES/sql%20queries.sql#L63">7. Drop Database</a>
+    -- ------------------------------------------
+    -- 7. Drop Database
+    -- ------------------------------------------
+    
     DROP DATABASE gamebar;
 ---
