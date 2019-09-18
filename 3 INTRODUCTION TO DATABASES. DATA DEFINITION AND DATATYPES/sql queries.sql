@@ -58,5 +58,9 @@ ALTER TABLE products
     
 ALTER TABLE employees
 	MODIFY COLUMN middle_name VARCHAR(100);
-    
+
+-- ------------------------------------------
+-- 7. Drop Database
+-- ------------------------------------------
+
 DROP DATABASE gamebar;
