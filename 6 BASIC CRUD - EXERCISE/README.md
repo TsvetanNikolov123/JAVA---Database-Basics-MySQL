@@ -366,7 +366,7 @@ ordered **descending by their salary.** Submit your query statements as
     ORDER BY salary DESC
     LIMIT 5;
 ---
-03.13 Find All Employees Except Marketing
+06.13 Find All Employees Except Marketing
 -----------------------------------------
 
 Write a SQL query to find the **first** and **last names** of all employees
